@@ -1,5 +1,15 @@
 #!/usr/local/bin/python
-""" $Id$
+"""
+CGI interface to tidy
+
+running at http://cgi.w3.org/cgi-bin/tidy since Apr 2000.
+
+Share and Enjoy. Open Source license:
+Copyright (c) 2001 W3C (MIT, INRIA, Keio)
+http://www.w3.org/Consortium/Legal/copyright-software-19980720
+$Id$
+ branched from v 1.11 2002/08/02 13:40:38 dom
+
 """
 
 import cgi
