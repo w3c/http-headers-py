@@ -1,0 +1,118 @@
+#!/usr/local/bin/python
+""" $Id$
+"""
+
+import cgi
+import sys
+import os
+import urlparse
+import urllib
+import http_head
+import http_auth
+import string
+
+res = ""
+Page1 = """Content-Type: text/html
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US">
+<head>
+<link href="http://www.w3.org/StyleSheets/base" rel="stylesheet"/>
+
+<title>HTTP HEAD service%s</title></head>
+<body>
+
+<p><a href="http://www.w3.org/"><img src="http://www.w3.org/Icons/w3c_home" alt="W3C"/></a></p>
+
+<h1>HTTP Head%s</h1>
+<h2>Description</h2>
+<p>THis tool takes the URI of a document as input and outputs the HTTP headers sent by the server for this resource.</p>
+"""
+
+Page2 = """
+<form method="get" action="headers">
+<p>
+<label>URI of the document: <input type="text" name="url" value="%s"/></label><br />
+<label>Proxy basic authentication for protected resources: <input type="checkbox" name="auth" %s/></label><br />
+<input type="submit" value="Get results"/></p>
+</form>
+
+<hr />
+<address>
+script $Revision$ of $Date$<br />
+by <a href="http://www.w3.org/People/Dom/">Dominique Hazael-Massieux</a><br />
+</address>
+</body>
+</html>
+"""
+
+class myURLopener(http_head.HEADURLopener,http_auth.ProxyAuthURLopener):
+	def __init__(self,auth=0,*args):
+		self.auth = auth
+		apply(urllib.FancyURLopener.__init__, (self,) + args)
+
+	def http_error_default(self, url, fp, errcode, errmsg, headers):
+		return None
+
+	def http_error(self, url, fp, errcode, errmsg, headers, data=None):
+		formatHeaders(errcode,errmsg,headers)
+		return urllib.URLopener.http_error(self, url, fp, errcode, errmsg, headers, data)		
+
+	def retry_http_basic_auth(self, url, realm, data=None):
+                if self.auth==1:
+                        return http_auth.ProxyAuthURLopener.retry_http_basic_auth(self,url,realm,data)
+		else:
+			return None
+
+def formatHeaders(errcode,errmsg,headers):
+	global res
+	res =  res + "<span class='errcode'>" + `errcode` + "</span> <span class='errmsg'>" + errmsg + '</span>\n'
+	for key in headers.keys():
+		headerName = string.join(map(string.capitalize,string.split(key,'-')),'-')
+		res = res + "<span class='headername'>" + headerName + '</span>: <span class="headervalue">' + headers[key]  + '</span>\n'
+	res = res + '\n'
+	return res
+
+
+def serveRequest():
+    global res
+    fields = cgi.FieldStorage()
+
+    if not fields.has_key('url'):
+        print Page1 % ("","")
+	print Page2 % ("","")
+    else:
+        uri = fields['url'].value
+	if uri[:5] == 'file:' or len(urlparse.urlparse(uri)[0])<2:
+		print "Status: 403"
+		print "Content-Type: text/plain"
+		print
+		print "sorry, I decline to handle file: addresses"
+	else:
+		auth = 0
+		auth_text = ""
+		if fields.has_key('auth') and  fields['auth'].value=='on':
+			auth=1
+			auth_text = "checked='checked'"
+		url_opener = myURLopener(auth)
+		try:	
+			fp = url_opener.open(uri)
+		except IOError, (errno, strerror):
+			url_opener.error = "I/O error: %s %s" % (errno,strerror)
+			fp = None
+                title = " for %s" % (uri)
+                link = " for <a href='%s'>%s</a>" % (uri,uri)
+       		print Page1 % (title,link)
+		print '<h2>Results</h2>\n<pre>'
+		if fp:
+			formatHeaders(200,"OK",fp.info())
+			fp.close()
+		else:
+			print "An error occured %s" % (url_opener.error)
+		print res
+		print '</pre>'
+		print Page2 % (uri, auth_text)
+
+if __name__ == '__main__':
+    if os.environ.has_key('SCRIPT_NAME'):
+        serveRequest()
