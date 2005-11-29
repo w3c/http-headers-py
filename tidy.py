@@ -1,15 +1,5 @@
 #!/usr/local/bin/python
-"""
-CGI interface to tidy
-
-running at http://cgi.w3.org/cgi-bin/tidy since Apr 2000.
-
-Share and Enjoy. Open Source license:
-Copyright (c) 2001 W3C (MIT, INRIA, Keio)
-http://www.w3.org/Consortium/Legal/copyright-software-19980720
-$Id$
- branched from v 1.11 2002/08/02 13:40:38 dom
-
+""" $Id$
 """
 
 import cgi
@@ -17,6 +7,7 @@ import sys
 import os
 import urlparse
 import urllib
+import httplib
 
 Page = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -33,16 +24,19 @@ Page = """
 Page2 = """
 <form method="GET">
 <p>Address of document to tidy: <input name="docAddr" value="%s"/></p>
-<p><input type="checkbox" name="indent" /> indent</p>
+<p><label><input type="checkbox" name="indent" /> indent</label></p>
+<p><label><input type="checkbox" name="forceXML" /> enforce XML well-formedness of the results</label> (may lead to loss of parts of the originating document if too ill-formed)</p>
 <p><input type="submit" value="get tidy results"/></p>
 </form>
 
 <hr />
 <h2>Stuff used to build this service</h2>
 <ul>
-<li><a href="http://www.w3.org/People/Raggett/tidy/">tidy</a></li>
+<li><a href="http://tidy.sourceforge.net/">tidy</a></li>
+<li><a href="http://xmlsoft.org/xmllint.html">xmllint</a> (for enforcing XML well-formedness)</li>
 <li><a href="http://www.python.org/">python</a>, apache, etc.</li>
 </ul>
+<p>See also the <a href="http://dev.w3.org/cvsweb/2000/tidy-svc/">underlying Python script</a>.</p>
 <address>
 script $Revision$ of $Date$<br />
 by <a href="http://www.w3.org/People/Connolly/">Dan Connolly</a><br />
@@ -58,7 +52,7 @@ def serveRequest():
     fields = cgi.FieldStorage()
 
     if not fields.has_key('docAddr'):
-        print "Content-Type: text/html"
+        print "Content-Type: text/html;charset=iso-8859-1"
 	print
         print Page
 	print Page2 % ("")
@@ -75,23 +69,56 @@ def serveRequest():
 		print
 		print "sorry, I decline to handle file: addresses"
 	else:
-		opts='-n -asxml -q'
+		opts='-n -asxml -q --force-output yes'
                 import http_auth
 		url_opener = http_auth.ProxyAuthURLopener()
+                if fields.headers.has_key('If-Modified-Since'):
+                    url_opener.addheader("If-Modified-Since: %s" % (fields.headers["If-Modified-Since"]))
+		if os.environ.has_key('REMOTE_ADDR') and os.environ['REMOTE_ADDR']:
+			url_opener.addheader('X_Forward_IP_Addr',os.environ['REMOTE_ADDR'])
 		try:
 			doc = url_opener.open(addr)
 		except IOError, (errno, strerror):
 			url_opener.error = "I/O error: %s %s" % (errno,strerror)
 			doc = None
-		print "Content-Type: text/html"
-		print
+                except httplib.InvalidURL:
+                        url_opener.error = "Invalid URL submitted"
+                        doc = None
 		if doc:
+			headers = doc.info()
+                        if headers.has_key('Last-Modified'):
+                            print "Last-Modified: %s" % ( headers["Last-Modified"] )
+                        charset = ""
+                        contentType="text/html"
+                        print "Content-Location: %s" % (addr)
+                        if headers.has_key('Content-Type'):
+                            contentType = cgi.parse_header(headers["Content-Type"])
+                            if contentType[1].has_key('charset'):
+                                charset = contentType[1]['charset']
+                            # @@@ should output charset=utf-8 when forceXML is set
+                            print "Content-Type: %s" % ( headers["Content-Type"] )
+                        else:
+                            print "Content-Type: text/html"
+                        if headers.has_key("Expires"):
+                            print "Expires: %s" % (headers['Expires'] )
+			print
 			if fields.has_key('indent'): opts=opts + ' -i'
-			command='/usr/bin/tr "\r" " "|/usr/local/bin/tidy %s 2>/dev/null' % opts
+			if charset == "iso-8859-1": opts=opts + ' -latin1'
+			if charset == "utf-8": opts=opts + ' -utf8'
+                        pipe=""
+                        if fields.has_key('forceXML'):
+                            pipe="|xmllint --recover --encode utf-8 - 2>/dev/null"
+			command='/usr/bin/tr "\r" " "|sed -e "s/ & / \&amp; /g"|/usr/bin/tidy %s 2>/dev/null %s' % (opts,pipe)
 			po = os.popen(command,"w")
 			sys.stdout.flush()
 			po.write(doc.read())
+#                        if po.close()==512:
+#                            print Page
+#                            print "<p style='color:#FF0000'>Tidy encountered a non-recoverable error while trying to process <a href='%s'>%s</a>. This is usually a sign that it couldn't parse your document (maybe is too far from being valid?).</p>" % (addr,addr)
+#                            print Page2 % addr
 		else:
+			print "Content-Type: text/html;charset=iso-8859-1"
+			print
 			print Page
 			print "<p style='color:#FF0000'>An error (%s) occured trying to get <a href='%s'>%s</a></p>" % (url_opener.error,addr,addr)
 			print Page2 % addr
