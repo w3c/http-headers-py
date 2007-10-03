@@ -8,6 +8,7 @@ import os
 import urlparse
 import urllib
 import httplib
+import surbl
 
 Page = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -57,6 +58,7 @@ def serveRequest():
         print Page
 	print Page2 % ("")
     else:
+        checker = surbl.SurblChecker('/usr/local/share/surbl/two-level-tlds','/afs/w3.org/pub/WWW/Systems/Server/debian/generic/usr/local/etc/surbl.whitelist')
         addr = fields['docAddr'].value
 	if "'" in addr:
 		print "Status: 403"
@@ -68,6 +70,11 @@ def serveRequest():
 		print "Content-Type: text/plain"
 		print
 		print "sorry, I decline to handle file: addresses"
+        elif checker.isMarkedAsSpam(addr):
+                print "Status: 403"
+                print "Content-Type: text/plain; charset=utf-8"
+                print
+                print "sorry, this URL matches a record known in SURBL. See http://www.surbl.org/"
 	else:
 		opts='-n -asxml -q --force-output yes'
                 import http_auth
@@ -94,7 +101,8 @@ def serveRequest():
                         if headers.has_key('Content-Type'):
                             contentType = cgi.parse_header(headers["Content-Type"])
                             if contentType[1].has_key('charset'):
-                                charset = contentType[1]['charset']
+                                from string import lower
+                                charset = lower(contentType[1]['charset'])
                             # @@@ should output charset=utf-8 when forceXML is set
                             print "Content-Type: %s" % ( headers["Content-Type"] )
                         else:
