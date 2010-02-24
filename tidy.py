@@ -95,8 +95,9 @@ def serveRequest():
 			headers = doc.info()
                         if headers.has_key('Last-Modified'):
                             print "Last-Modified: %s" % ( headers["Last-Modified"] )
-                        charset = ""
+                        charset = "utf-8"
                         contentType="text/html"
+                        outputContentType="text/html"
                         print "Content-Location: %s" % (addr)
                         if headers.has_key('Content-Type'):
                             contentType = cgi.parse_header(headers["Content-Type"])
@@ -104,26 +105,32 @@ def serveRequest():
                                 from string import lower
                                 charset = lower(contentType[1]['charset'])
                             # @@@ should output charset=utf-8 when forceXML is set
-                            print "Content-Type: %s" % ( headers["Content-Type"] )
-                        else:
-                            print "Content-Type: text/html"
+                            outputContentType =  headers["Content-Type"]
                         if headers.has_key("Expires"):
                             print "Expires: %s" % (headers['Expires'] )
-			print
-			if fields.has_key('indent'): opts=opts + ' -i'
 			if charset == "iso-8859-1": opts=opts + ' -latin1'
 			if charset == "utf-8": opts=opts + ' -utf8'
+                        if not cgi.parse_header(outputContentType)[1].has_key('charset') and cgi.parse_header(outputContentType)[0]=="text/html":
+                            outputContentType=outputContentType + "; charset=utf-8"
+                        print "Content-Type: %s" % outputContentType
+			print
+			if fields.has_key('indent'): opts=opts + ' -i'
                         pipe=""
                         if fields.has_key('forceXML'):
                             pipe="|xmllint --recover --encode utf-8 - 2>/dev/null"
-			command='/usr/bin/tr "\r" " "|sed -e "s/ & / \&amp; /g"|/usr/bin/tidy %s 2>/dev/null %s' % (opts,pipe)
-			po = os.popen(command,"w")
-			sys.stdout.flush()
-			po.write(doc.read())
-#                        if po.close()==512:
-#                            print Page
-#                            print "<p style='color:#FF0000'>Tidy encountered a non-recoverable error while trying to process <a href='%s'>%s</a>. This is usually a sign that it couldn't parse your document (maybe is too far from being valid?).</p>" % (addr,addr)
-#                            print Page2 % addr
+                        import re
+                        d = doc.read()
+                        # searching for XHTML Doctype
+                        docpat = re.compile("<!DOCTYPE\s+html\s+PUBLIC\s+\"-//W3C//DTD\s+XHTML\s+")
+                        m = docpat.search(d)
+                        if fields.has_key('passThroughXHTML') and m:
+                            sys.stdout.flush()
+                            print d
+                        else:
+                            command='/usr/bin/tr "\r" " "|sed -e "s/ & / \&amp; /g"|/usr/bin/tidy %s 2>/dev/null %s' % (opts,pipe)
+                            po = os.popen(command,"w")
+                            sys.stdout.flush()
+                            po.write(d)
 		else:
 			print "Content-Type: text/html;charset=iso-8859-1"
 			print
