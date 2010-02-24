@@ -15,12 +15,11 @@ import os
 import cgi
 import sys
 import string
-import urllib
 import urlparse
 import popen2
 
 customized_dico="/usr/local/share/aspell/w3c.dat"
-languages = {"en":"English","fr":"French"}
+languages = {"en_US":"English","fr":"French"}
 def format_option(a,b,c):
         if a:
                 selected=""
@@ -32,10 +31,10 @@ def concat(a,b):
         return a+b
 
 
-Page1 ="""Content-Type:text/html
+Page1 ="""Content-Type:text/html; charset=utf-8
 
 
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
@@ -141,9 +140,9 @@ if __name__ == '__main__':
                 elif fields.has_key('referrer') and os.environ.has_key('HTTP_REFERER'):
                         uri = os.environ['HTTP_REFERER']
                 if uri:
-			uri_text1="for %s" % (uri)
-			uri_text=" for <a href=\"%s\">%s</a>" %(uri,uri)
-                lang = "en"
+			uri_text1="for %s" % (cgi.escape(uri))
+			uri_text=" for <a href=\"%s\">%s</a>" %(cgi.escape(uri),cgi.escape(uri))
+                lang = "en_US"
                 if fields.has_key('lang') and fields['lang'].value in languages.keys():
                         lang=fields['lang'].value
                 languages_options = reduce(concat,map(format_option,languages.keys(),languages.values(),[lang for x in languages.keys()]))
@@ -165,12 +164,18 @@ if __name__ == '__main__':
 					fp = url_opener.open(uri)
 				except IOError, (errno, strerror):
 					url_opener.error = "I/O error: %s %s" % (errno,strerror)
-					fp = None	
-				print Page1 % ('<meta name="ROBOTS" content="NOINDEX,NOFOLLOW"/>',uri_text1,uri_text,uri,languages_options,suggest_txt)
+					fp = None
+				print Page1 % ('<meta name="ROBOTS" content="NOINDEX,NOFOLLOW"/>',uri_text1,uri_text,cgi.escape(uri),languages_options,suggest_txt)
                                 personal = "--personal=%s" % customized_dico
-                                if lang!="en":
+                                if lang!="en_US":
                                         personal = ""
-	        		command = "/usr/local/bin/lynx -nolist -dump -stdin|/usr/bin/aspell --lang %s -a %s --sug-mode=fast" % (lang,personal)
+                                headers = fp.info()
+                                charset_opt = ""
+                                if headers.has_key('Content-Type'):
+                                        contentType = cgi.parse_header(headers["Content-Type"])
+                                        if contentType[1].has_key('charset'):
+                                                charset_opt = "-assume_charset=%s" % contentType[1]['charset']
+	        		command = "/usr/local/bin/lynx  %s -cfg=/usr/local/lib/lynx.cfg -nolist -dump -stdin|/usr/bin/aspell --encoding=utf-8 --lang %s -a %s --sug-mode=fast" % (charset_opt,lang,personal)
 
         	                (piperfd,pipewfd,pipeErr) = popen2.popen3(command)
 
@@ -189,9 +194,9 @@ if __name__ == '__main__':
         		        		format(piperfd,suggest)
                         	                piperfd.close()
 	                        else:
-        	                        print "<p><span class='no'>Unable to read</span> <a href='%s'>%s</a> (%s). Sorry, check the URI.</p>" % (uri,uri, url_opener.error)
+        	                        print "<p><span class='no'>Unable to read</span> <a href='%s'>%s</a> (%s). Sorry, check the URI.</p>" % (cgi.escape(uri),cgi.escape(uri), url_opener.error)
 		else:
-			print Page1 % ('',uri_text1,uri_text,uri,languages_options,suggest_txt)
+			print Page1 % ('',uri_text1,uri_text,cgi.escape(uri),languages_options,suggest_txt)
 		print Page2
 
 
