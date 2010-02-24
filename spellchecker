@@ -67,7 +67,6 @@ Page1 ="""Content-Type:text/html; charset=utf-8
 Page2 = """
 <h2>See also</h2>
 <ul>
-<li><a href="http://www.w3.org/2002/08/diction">the W3C stylistic checker</a></li>
 <li><a href="http://www.w3.org/QA/Tools">the QA Toolbox</a></li>
 </ul>
 
