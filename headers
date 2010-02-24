@@ -12,7 +12,7 @@ import http_auth
 import string
 
 res = ""
-Page1 = """Content-Type: text/html
+Page1 = """Content-Type: text/html; charset=utf-8
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US">
@@ -26,7 +26,7 @@ Page1 = """Content-Type: text/html
 
 <h1>HTTP Head%s</h1>
 <h2>Description</h2>
-<p>THis tool takes the URI of a document as input and outputs the HTTP headers sent by the server for this resource.</p>
+<p>This tool takes the URI of a document as input and outputs the HTTP headers sent by the server for this resource.</p>
 """
 
 Page2 = """
@@ -34,9 +34,11 @@ Page2 = """
 <p>
 <label>URI of the document: <input type="text" name="url" value="%s"/></label><br />
 <label>Proxy basic authentication for protected resources: <input type="checkbox" name="auth" %s/></label><br />
+<!-- <label>Forward my browser's HTTP headers: <input type="checkbox" name="forward" %s/></label><br />-->
 <input type="submit" value="Get results"/></p>
 </form>
-
+<p>Note that this script doesn't transmit your browsers HTTP headers when doing the request.</p>
+<p>See also the <a href="http://dev.w3.org/cvsweb/2000/tidy-svc/">underlying Python scripts</a>.</p>
 <hr />
 <address>
 script $Revision$ of $Date$<br />
@@ -66,10 +68,11 @@ class myURLopener(http_head.HEADURLopener,http_auth.ProxyAuthURLopener):
 
 def formatHeaders(errcode,errmsg,headers):
 	global res
+        import string
 	res =  res + "<span class='errcode'>" + `errcode` + "</span> <span class='errmsg'>" + errmsg + '</span>\n'
 	for key in headers.keys():
 		headerName = string.join(map(string.capitalize,string.split(key,'-')),'-')
-		res = res + "<span class='headername'>" + headerName + '</span>: <span class="headervalue">' + headers[key]  + '</span>\n'
+		res = res + "<span class='headername'>" + headerName + '</span>: <span class="headervalue">' + string.replace(string.replace(headers[key],'&','&amp;'),'<','&lt;')  + '</span>\n'
 	res = res + '\n'
 	return res
 
@@ -80,7 +83,7 @@ def serveRequest():
 
     if not fields.has_key('url'):
         print Page1 % ("","")
-	print Page2 % ("","")
+	print Page2 % ("","","")
     else:
         uri = fields['url'].value
 	if uri[:5] == 'file:' or len(urlparse.urlparse(uri)[0])<2:
@@ -94,7 +97,18 @@ def serveRequest():
 		if fields.has_key('auth') and  fields['auth'].value=='on':
 			auth=1
 			auth_text = "checked='checked'"
+#                forward = 0
+                forward_text = ""
+# CGI module in python is borken, in the sense that fields.headers doesn't have the relevant headers :(
+#		if fields.has_key('forward') and  fields['forward'].value=='on':
+#			forward=1
+#			forward_text = "checked='checked'"
 		url_opener = myURLopener(auth)
+#                if forward:
+#                        for key,val in fields.headers.iteritems():
+#                                url_opener.addheader(key,val)
+		if os.environ.has_key('REMOTE_ADDR') and os.environ['REMOTE_ADDR']:
+			url_opener.addheader('X_Fwd_IP_Addr',os.environ['REMOTE_ADDR'])
 		try:	
 			fp = url_opener.open(uri)
 		except IOError, (errno, strerror):
@@ -103,6 +117,12 @@ def serveRequest():
                 title = " for %s" % (uri)
                 link = " for <a href='%s'>%s</a>" % (uri,uri)
        		print Page1 % (title,link)
+#                if forward:
+#                        print '<h2>Forwarded headers</h2>\n<pre>'
+#                        for key,val in fields.headers.iteritems():
+#                                headerName = string.join(map(string.capitalize,string.split(key,'-')),'-')
+#                                print "<span class='headername'>" + headerName + '</span>: <span class="headervalue">' + string.replace(string.replace(val,'&','&amp;'),'<','&lt;')  + '</span>\n'
+#                        print "</pre>"
 		print '<h2>Results</h2>\n<pre>'
 		if fp:
 			formatHeaders(200,"OK",fp.info())
@@ -111,7 +131,7 @@ def serveRequest():
 			print "An error occured %s" % (url_opener.error)
 		print res
 		print '</pre>'
-		print Page2 % (uri, auth_text)
+		print Page2 % (uri, auth_text,forward_text)
 
 if __name__ == '__main__':
     if os.environ.has_key('SCRIPT_NAME'):
