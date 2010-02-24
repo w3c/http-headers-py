@@ -134,7 +134,7 @@ def serveRequest():
                             remove_feedcarriage_command = ["/usr/bin/tr","\r"," "]
                             escape_lonely_ampersands_command = ["/bin/sed","-e","s/ & / \&amp;/g"]
                             tidy_command = ["/usr/bin/tidy"] + tidy_options
-                            force_xml_command = ["/usr/bin/xmllint", "--recover", "--encode", "utf-8"]
+                            force_xml_command = ["/usr/bin/xmllint", "--recover", "--encode", "utf-8", "-"]
                             p1 =  Popen(remove_feedcarriage_command, stdin=PIPE, stdout=PIPE)
                             p1.stdin.write(d)
                             p1.stdin.close()
