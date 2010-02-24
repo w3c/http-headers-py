@@ -59,7 +59,7 @@ Page1 ="""Content-Type:text/html; charset=utf-8
 <p>This tool allows you to check the spelling of a web page. It currently only supports English and French.</p>
 
 <h2>Usage</h2>
-<form action="http://www.w3.org/2002/01/spellchecker" method="get"><p><label>URI of the document to be checked:<input type="text" value="%s" name="uri"/></label><br />
+<form action="" method="get"><p><label>URI of the document to be checked:<input type="text" value="%s" name="uri"/></label><br />
 <label>Language of the document: <select name="lang">%s</select><br />
 <label>Presents possible corrections: <input type="checkbox" name="suggest"%s /></label><br />
 <input type="submit" value="Get results"/></p></form>
