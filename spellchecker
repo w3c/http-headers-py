@@ -5,6 +5,9 @@ Spellchecker
 URI: http://www.w3.org/2002/01/spellchecker
 Maintainer: dom@w3.org
 
+See also a version that features recursive checking:
+http://www.w3.org/mid/1ce6d0230912160806x1ee6f25dgafc73865140b239e@mail.gmail.com
+
 Share and Enjoy. Open Source license:
 Copyright (c) 2001-2005 W3C (MIT, ERCIM, Keio)
 http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
