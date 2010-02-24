@@ -1,5 +1,8 @@
 #!/usr/bin/python
 """ $Id$
+Debian packages dependencies: python-dnspython, tidy, libxml2-utils
+Other python modules: http://dev.w3.org/2000/tidy-svc/http_auth.py, http://dev.w3.org/2006/surbl.py
+Maintainer: dom@w3.org
 """
 
 import cgi
@@ -18,7 +21,7 @@ Page = """
 </head>
 <body>
 
-<p><a href="http://www.w3.org/"><img src="http://www.w3.org/Icons/w3c_home" alt="W3C"/></a> <a href="http://www.w3.org/XML/">XML</a></p>
+<p><a href="http://www.w3.org/"><img src="http://www.w3.org/Icons/w3c_home" alt="W3C"/></a></p>
 
 <h1>Tidy your HTML</h1>
 """
@@ -41,7 +44,7 @@ Page2 = """
 <address>
 script $Revision$ of $Date$<br />
 by <a href="http://www.w3.org/People/Connolly/">Dan Connolly</a><br />
-but I didn't do the real work, i.e. writing tidy
+Further developed and maintained by <a href="http://www.w3.org/People/Dom/">Dominique Hazael-Massieux</a>
 </address>
 </body>
 </html>
