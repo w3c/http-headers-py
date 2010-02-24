@@ -175,7 +175,7 @@ if __name__ == '__main__':
                                         contentType = cgi.parse_header(headers["Content-Type"])
                                         if contentType[1].has_key('charset'):
                                                 charset_opt = "-assume_charset=%s" % contentType[1]['charset']
-	        		command = "/usr/local/bin/lynx  %s -cfg=/usr/local/lib/lynx.cfg -nolist -dump -stdin|/usr/bin/aspell --encoding=utf-8 --lang %s -a %s --sug-mode=fast" % (charset_opt,lang,personal)
+	        		command = "/usr/bin/lynx  %s -cfg=/usr/local/lib/lynx.cfg -nolist -dump -stdin|/usr/bin/aspell --encoding=utf-8 --lang %s -a %s --sug-mode=fast" % (charset_opt,lang,personal)
 
         	                (piperfd,pipewfd,pipeErr) = popen2.popen3(command)
 
