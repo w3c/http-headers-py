@@ -7,6 +7,10 @@ class ProxyAuthURLopener(urllib.FancyURLopener):
 		self.error = `errcode` + " " + errmsg
 		return None
 
+        def http_error_304(self,uri,fp,errocode,errmsg,headers):
+                print 'HTTP/1.1 304 Not Modified'
+                return None
+
 	def open_local_file(self, url):
 		self.error = "Local file URL not accepted"
 		return None
