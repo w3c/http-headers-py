@@ -76,7 +76,7 @@ def serveRequest():
                 print
                 print "sorry, this URL matches a record known in SURBL. See http://www.surbl.org/"
 	else:
-		opts='-n -asxml -q --force-output yes'
+                tidy_options = ["-n", "-asxml", "-q", "--force-output","yes"]
                 import http_auth
 		url_opener = http_auth.ProxyAuthURLopener()
                 if fields.headers.has_key('If-Modified-Since'):
@@ -108,16 +108,16 @@ def serveRequest():
                             outputContentType =  headers["Content-Type"]
                         if headers.has_key("Expires"):
                             print "Expires: %s" % (headers['Expires'] )
-			if charset == "iso-8859-1": opts=opts + ' -latin1'
-			if charset == "utf-8": opts=opts + ' -utf8'
+			if charset == "iso-8859-1": tidy_options.append('-latin1')
+			if charset == "utf-8": tidy_options.append('-utf8')
                         if not cgi.parse_header(outputContentType)[1].has_key('charset') and cgi.parse_header(outputContentType)[0]=="text/html":
                             outputContentType=outputContentType + "; charset=utf-8"
                         print "Content-Type: %s" % outputContentType
 			print
-			if fields.has_key('indent'): opts=opts + ' -i'
-                        pipe=""
+			if fields.has_key('indent'): tidy_options.append('-i')
+                        forceXML = False
                         if fields.has_key('forceXML'):
-                            pipe="|xmllint --recover --encode utf-8 - 2>/dev/null"
+                            forceXML = True
                         import re
                         d = doc.read()
                         # searching for XHTML Doctype
@@ -127,10 +127,21 @@ def serveRequest():
                             sys.stdout.flush()
                             print d
                         else:
-                            command='/usr/bin/tr "\r" " "|sed -e "s/ & / \&amp; /g"|/usr/bin/tidy %s 2>/dev/null %s' % (opts,pipe)
-                            po = os.popen(command,"w")
+                            from subprocess import Popen, PIPE
+                            remove_feedcarriage_command = ["/usr/bin/tr","\r"," "]
+                            escape_lonely_ampersands_command = ["/bin/sed","-e","s/ & / \&amp;/g"]
+                            tidy_command = ["/usr/bin/tidy"] + tidy_options
+                            force_xml_command = ["/usr/bin/xmllint", "--recover", "--encode", "utf-8"]
+                            p1 =  Popen(remove_feedcarriage_command, stdin=PIPE, stdout=PIPE)
+                            p1.stdin.write(d)
+                            p1.stdin.close()
+                            p2 = Popen(escape_lonely_ampersands_command, stdin=p1.stdout, stdout=PIPE)
+                            p3 = Popen(tidy_command, stdin=p2.stdout, stdout=PIPE)
+                            p = p3
+                            if forceXML:
+                                p = Popen(force_xml_command, stdin=p3.stdout, stdout=PIPE)
                             sys.stdout.flush()
-                            po.write(d)
+                            print p.communicate()[0]
 		else:
 			print "Content-Type: text/html;charset=iso-8859-1"
 			print
