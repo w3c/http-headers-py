@@ -149,7 +149,7 @@ def serveRequest():
 			print "Content-Type: text/html;charset=iso-8859-1"
 			print
 			print Page
-			print "<p style='color:#FF0000'>An error (%s) occured trying to get <a href='%s'>%s</a></p>" % (url_opener.error, cgi.escape(addr) , cgi.escape(addr))
+			print "<p style='color:#FF0000'>An error (<code>%s</code>) occured trying to get <a href='%s'>%s</a></p>" % (cgi.escape(url_opener.error), cgi.escape(addr) , cgi.escape(addr))
 			print Page2 % cgi.escape(addr)
 
 
