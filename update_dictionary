@@ -2,7 +2,7 @@
 
 
 customized_dico="/usr/local/share/aspell/w3c.dat"
-aspell = "/usr/local/bin/aspell"
+aspell = "/usr/bin/aspell"
 
 Page1 ="""Content-Type:text/html
 

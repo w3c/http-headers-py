@@ -116,7 +116,7 @@ def format(fp,suggest):
 	if len(words):
                 keys = words.keys()
                 keys.sort()
-		print "<form action=\"http://www.w3.org/2002/01/update_dictionary\" method=\"post\"><ol>"
+		print "<form action=\"http://www.w3.org/Team/update_dictionary\" method=\"post\"><ol>"
 		for error in keys:
 			print "<li>\"<span class='no'>%s</span>\" (<input type=\"checkbox\" name=\"list[]\" value=\"%s\"/> add to the dictionary)" % (error,error)
 
