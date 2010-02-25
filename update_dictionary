@@ -56,6 +56,9 @@ if __name__ == '__main__':
 					elif string.find(words.value,'"')==-1:
 						words_list.append(words.value)
 			from subprocess import Popen, PIPE
+			# This seems to fail at this moment with
+			# 'Sorry "create/merge personal" is currently unimplemented.'
+			# sigh :(
 			command = [aspell, "--lang=english", "--personal=%s" % (customized_dico), "merge", "personal"] + words_list
 			po =  Popen(command, stdout=PIPE)
 			result = po.communicate()[0]
