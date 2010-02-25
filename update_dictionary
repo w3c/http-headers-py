@@ -56,7 +56,7 @@ if __name__ == '__main__':
 					elif string.find(words.value,'"')==-1:
 						words_list.append(words.value)
 			from subprocess import Popen, PIPE
-			command = [aspell, "--lang=english", "merge", "personal", customized_dico] + words_list
+			command = [aspell, "--lang=english", "--personal=%s" % (customized_dico), "merge", "personal"] + words_list
 			po =  Popen(command, stdout=PIPE)
 			result = po.communicate()[0]
                         words_list_str = cgi.escape(string.join(words_list))
