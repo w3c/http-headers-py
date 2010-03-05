@@ -1,5 +1,6 @@
 #!/usr/bin/python
 """ $Id$
+Maintainer: dom@w3.org
 """
 
 import cgi
