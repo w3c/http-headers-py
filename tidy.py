@@ -134,29 +134,25 @@ def serveRequest():
                             sys.stdout.flush()
                             print d
                         else:
-                            from subprocess import Popen, PIPE
-                            from tempfile import TemporaryFile, mkstemp
-#                            out = open('/tmp/d.txt', 'w')
-
+                            from tempfile import mkstemp
                             (fd, fname) = mkstemp(prefix='tidy', dir='/tmp')
                             out = os.fdopen(fd, 'w+b')
-#                            out = TemporaryFile(prefix='tidy', dir='/tmp')
                             out.write(d)
                             out.flush()
 
+                            from subprocess import Popen, PIPE
 
-                            remove_feedcarriage_command = ["/usr/bin/tr","\r"," "]
-                            escape_lonely_ampersands_command = ["/bin/sed","-e","s/ & / \&amp;/g"]
-                            tidy_command = ["/usr/bin/tidy"] + tidy_options
-                            force_xml_command = ["/usr/bin/xmllint", "--recover", "--encode", "utf-8", "-"]
-                            
-                            p1 = Popen(remove_feedcarriage_command, stdin=open(fname, 'r'), stdout=PIPE)
-                            p2 = Popen(escape_lonely_ampersands_command, stdin=p1.stdout, stdout=PIPE)
-                            p3 = Popen(tidy_command, stdin=p2.stdout, stdout=PIPE)
-                            
-                            p = p3
+                            cmd = "/usr/bin/tr '\r' ' ' | /bin/sed '-e' 's/ & / \\&amp;/g' | /usr/bin/tidy -n -asxml -q --force-output yes --show-warnings no -utf8"
+                            p = Popen(cmd, stdin=open(fname, 'r'), stdout=PIPE, shell=True)
+
+                            # the problem is: as soon as d comes from http://www.w3.org/2010/02/rdfa/sources/rdfa-dom-api/ the process hangs on the writing
+#                             p = Popen(cmd, stdin=PIPE, stdout=PIPE)
+#                             p.stdin.write(d)
+#                             p.stdin.flush()
+
                             if forceXML:
-                                p = Popen(force_xml_command, stdin=p3.stdout, stdout=PIPE)
+                                force_xml_command = ["/usr/bin/xmllint", "--recover", "--encode", "utf-8", "-"]
+                                p = Popen(force_xml_command, stdin=p.stdout, stdout=PIPE)
                             print p.communicate()[0]
                             sys.stdout.flush()
                             out.close()
