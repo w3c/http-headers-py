@@ -79,7 +79,7 @@ def serveRequest():
                 print
                 print "sorry, this URL matches a record known in SURBL. See http://www.surbl.org/"
 	else:
-                tidy_options = ["-n", "-asxml", "-q", "--force-output","yes"]
+                tidy_options = ["-n", "-asxml", "-q", "--force-output","yes", "--show-warnings", "no"]
                 import http_auth
 		url_opener = http_auth.ProxyAuthURLopener()
                 if fields.headers.has_key('If-Modified-Since'):
