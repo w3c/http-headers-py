@@ -51,6 +51,10 @@ Further developed and maintained by <a href="http://www.w3.org/People/Dom/">Domi
 """
 
 
+from time import strftime, localtime
+
+# def now():
+#     return strftime("%H:%M:%S", localtime())
 
 def serveRequest():
     fields = cgi.FieldStorage()
@@ -131,20 +135,31 @@ def serveRequest():
                             print d
                         else:
                             from subprocess import Popen, PIPE
+                            from tempfile import TemporaryFile, mkstemp
+#                            out = open('/tmp/d.txt', 'w')
+
+                            (fd, fname) = mkstemp(prefix='tidy', dir='/tmp')
+                            out = os.fdopen(fd, 'w+b')
+#                            out = TemporaryFile(prefix='tidy', dir='/tmp')
+                            out.write(d)
+                            out.flush()
+
+
                             remove_feedcarriage_command = ["/usr/bin/tr","\r"," "]
                             escape_lonely_ampersands_command = ["/bin/sed","-e","s/ & / \&amp;/g"]
                             tidy_command = ["/usr/bin/tidy"] + tidy_options
                             force_xml_command = ["/usr/bin/xmllint", "--recover", "--encode", "utf-8", "-"]
-                            p1 =  Popen(remove_feedcarriage_command, stdin=PIPE, stdout=PIPE)
-                            p1.stdin.write(d)
-                            p1.stdin.close()
+                            
+                            p1 = Popen(remove_feedcarriage_command, stdin=open(fname, 'r'), stdout=PIPE)
                             p2 = Popen(escape_lonely_ampersands_command, stdin=p1.stdout, stdout=PIPE)
                             p3 = Popen(tidy_command, stdin=p2.stdout, stdout=PIPE)
+                            
                             p = p3
                             if forceXML:
                                 p = Popen(force_xml_command, stdin=p3.stdout, stdout=PIPE)
-                            sys.stdout.flush()
                             print p.communicate()[0]
+                            sys.stdout.flush()
+                            out.close()
 		else:
 			print "Content-Type: text/html;charset=iso-8859-1"
 			print
