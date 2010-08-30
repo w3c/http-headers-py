@@ -15,15 +15,17 @@ class ProxyAuthURLopener(urllib.FancyURLopener):
 		self.error = "Local file URL not accepted"
 		return None
 
-	def retry_http_basic_auth(self, url, realm, data=None):
+	def _send_auth_challenge(self, scheme, url, realm, data=None):
+		if scheme!="http" and scheme!="https":
+			return None
 		if os.environ.has_key('HTTP_AUTHORIZATION') and os.environ['HTTP_AUTHORIZATION']:
 			self.addheader('Authorization',os.environ['HTTP_AUTHORIZATION'])
 			del os.environ['HTTP_AUTHORIZATION']
 
 			if data is None:
-				return self.open('http:' + url)
+				return self.open(scheme + ':' + url)
 			else:
-				return self.open('http:' + url,data)
+				return self.open(scheme + ':' + url,data)
 		else:
 			global Page
 			print 'Status: 401 Authorization Required'
@@ -36,6 +38,13 @@ class ProxyAuthURLopener(urllib.FancyURLopener):
 </head>
 <body>
 <h1>Authorization Required</h1>
-<p>You need %s access to http:%s to use this service.</p>
-""" % (realm,url)
+<p>You need %s access to %s:%s to use this service.</p>
+""" % (realm, scheme, url)
 			return None
+
+	def  retry_https_basic_auth(self, url, realm, data=None):
+		# @@@ need to send challenge through https as needed
+		return self._send_auth_challenge("https", url, realm, data)
+
+	def retry_http_basic_auth(self, url, realm, data=None):
+		return self._send_auth_challenge("https", url, realm, data)
