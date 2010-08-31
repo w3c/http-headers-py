@@ -47,4 +47,4 @@ class ProxyAuthURLopener(urllib.FancyURLopener):
 		return self._send_auth_challenge("https", url, realm, data)
 
 	def retry_http_basic_auth(self, url, realm, data=None):
-		return self._send_auth_challenge("https", url, realm, data)
+		return self._send_auth_challenge("http", url, realm, data)
