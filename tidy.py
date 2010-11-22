@@ -88,6 +88,7 @@ def serveRequest():
 		url_opener = http_auth.ProxyAuthURLopener()
                 if fields.headers.has_key('If-Modified-Since'):
                     url_opener.addheader("If-Modified-Since: %s" % (fields.headers["If-Modified-Since"]))
+                import os
 		if os.environ.has_key('REMOTE_ADDR') and os.environ['REMOTE_ADDR']:
 			url_opener.addheader('X_Forward_IP_Addr',os.environ['REMOTE_ADDR'])
 		try:
