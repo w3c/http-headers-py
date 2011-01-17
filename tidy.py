@@ -157,6 +157,8 @@ def serveRequest():
                             print p.communicate()[0]
                             sys.stdout.flush()
                             out.close()
+                            fd.close()
+                            os.remove(fname)
 		else:
 			print "Content-Type: text/html;charset=iso-8859-1"
 			print
