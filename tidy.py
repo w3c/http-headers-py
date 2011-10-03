@@ -131,10 +131,27 @@ def serveRequest():
                         # searching for XHTML Doctype
                         docpat = re.compile("<!DOCTYPE\s+html\s+PUBLIC\s+\"-//W3C//DTD\s+XHTML\s+")
                         m = docpat.search(d)
+                        html5doctype = re.compile("<!doctype\s+html\s*>", re.IGNORECASE)
+                        html5 = html5doctype.search(d)
                         if fields.has_key('passThroughXHTML') and m:
                             sys.stdout.flush()
                             print d
                         else:
+                            if html5:
+                                html5_tidy_options = ["--add-xml-space", "no",
+                                                      "--output-xhtml", "yes",
+                                                      "--tidy-mark", "no",
+                                                      "--new-blocklevel-tags", '"article,aside,canvas,dialog,details,figcaption,figure,footer,header,hgroup,menu,nav,section,summary"',
+                                                      "--new-inline-tags" ,'"video,audio,canvas,ruby,rt,rp,time,meter,progress,track,source"',
+                                                      "--break-before-br", "no",
+                                                      "--vertical-space", "no",
+                                                      "--enclose-text", "no",
+                                                      "--numeric-entities", "yes",
+                                                      "--wrap", "1000",
+                                                      "--wrap-attributes", "no",
+                                                      "--drop-empty-paras", "no"
+                                                      ]
+                                tidy_options += html5_tidy_options
                             from tempfile import mkstemp
                             (fd, fname) = mkstemp(prefix='tidy', dir='/tmp')
                             out = os.fdopen(fd, 'w+b')
@@ -143,7 +160,7 @@ def serveRequest():
 
                             from subprocess import Popen, PIPE
 
-                            cmd = "/usr/bin/tr '\r' ' ' | /bin/sed '-e' 's/ & / \\&amp;/g' | /usr/bin/tidy -n -asxml -q --force-output yes --show-warnings no -utf8"
+                            cmd = "/usr/bin/tr '\r' ' ' | /bin/sed '-e' 's/ & / \\&amp;/g' | /usr/bin/tidy %s" % (" ".join(tidy_options))
                             p = Popen(cmd, stdin=open(fname, 'r'), stdout=PIPE, shell=True)
 
                             # the problem is: as soon as d comes from http://www.w3.org/2010/02/rdfa/sources/rdfa-dom-api/ the process hangs on the writing
@@ -157,7 +174,6 @@ def serveRequest():
                             print p.communicate()[0]
                             sys.stdout.flush()
                             out.close()
-                            fd.close()
                             os.remove(fname)
 		else:
 			print "Content-Type: text/html;charset=iso-8859-1"
