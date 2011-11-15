@@ -138,19 +138,22 @@ def serveRequest():
                             print d
                         else:
                             if html5:
-                                html5_tidy_options = ["--add-xml-space", "no",
-                                                      "--output-xhtml", "yes",
-                                                      "--tidy-mark", "no",
-                                                      "--new-blocklevel-tags", '"article,aside,canvas,dialog,details,figcaption,figure,footer,header,hgroup,menu,nav,section,summary"',
-                                                      "--new-inline-tags" ,'"video,audio,canvas,ruby,rt,rp,time,meter,progress,track,source"',
-                                                      "--break-before-br", "no",
-                                                      "--vertical-space", "no",
-                                                      "--enclose-text", "no",
-                                                      "--numeric-entities", "yes",
-                                                      "--wrap", "1000",
-                                                      "--wrap-attributes", "no",
-                                                      "--drop-empty-paras", "no"
-                                                      ]
+                                html5_tidy_options = [
+                                    "--add-xml-decl", "no",
+                                    "--add-xml-space", "no",
+                                    "--output-xhtml", "yes",
+                                    "--tidy-mark", "no",
+                                    "--new-blocklevel-tags", '"article,aside,canvas,dialog,details,figcaption,figure,footer,header,hgroup,menu,nav,section,summary"',
+                                    "--new-inline-tags", '"video,audio,canvas,ruby,rt,rp,time,meter,progress,bdi,datalist,output"',
+                                    "--new-empty-tags", '"command,track,keygen,source,wbr"',
+                                    "--break-before-br", "no",
+                                    "--vertical-space", "no",
+                                    "--enclose-text", "no",
+                                    "--numeric-entities", "yes",
+                                    "--wrap", "1000",
+                                    "--wrap-attributes", "no",
+                                    "--drop-empty-paras", "no"
+                                    ]
                                 tidy_options += html5_tidy_options
                             from tempfile import mkstemp
                             (fd, fname) = mkstemp(prefix='tidy', dir='/tmp')
