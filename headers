@@ -67,6 +67,13 @@ class myURLopener(http_head.HEADURLopener,http_auth.ProxyAuthURLopener):
 		else:
 			return None
 
+	def retry_https_basic_auth(self, url, realm, data=None):
+                if self.auth==1:
+                        return http_auth.ProxyAuthURLopener.retry_https_basic_auth(self,url,realm,data)
+		else:
+			return None
+
+
 def formatHeaders(errcode,errmsg,headers):
 	global res
         import string
