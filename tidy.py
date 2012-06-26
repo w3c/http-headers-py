@@ -3,6 +3,15 @@
 Debian packages dependencies: python-dnspython, tidy, libxml2-utils
 Other python modules: http://dev.w3.org/2000/tidy-svc/http_auth.py, http://dev.w3.org/2006/surbl.py
 Maintainer: dom@w3.org
+
+Copyright 2012-2012 World Wide Web Consortium, (Massachusetts Institute of
+Technology, European Research Consortium for Informatics and Mathematics,
+Keio University). All Rights Reserved. This work is distributed under the
+W3C Software License [1] in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.
+
+[1] http://www.w3.org/Consortium/Legal/copyright-software
 """
 
 import cgi
