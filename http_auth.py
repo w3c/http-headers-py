@@ -16,12 +16,10 @@ class ProxyAuthURLopener(urllib.FancyURLopener):
 		return None
 
 	def _send_auth_challenge(self, scheme, url, realm, data=None):
-		if scheme!="http" and scheme!="https":
-			return None
-		if os.environ.has_key('HTTP_AUTHORIZATION') and os.environ['HTTP_AUTHORIZATION']:
+		if scheme not in ('http', 'https'):
+			return
+		if os.environ.get('HTTP_AUTHORIZATION'):
 			self.addheader('Authorization',os.environ['HTTP_AUTHORIZATION'])
-			del os.environ['HTTP_AUTHORIZATION']
-
 			if data is None:
 				return self.open(scheme + ':' + url)
 			else:
@@ -42,7 +40,7 @@ class ProxyAuthURLopener(urllib.FancyURLopener):
 """ % (realm, scheme, url)
 			return None
 
-	def  retry_https_basic_auth(self, url, realm, data=None):
+	def retry_https_basic_auth(self, url, realm, data=None):
 		# @@@ need to send challenge through https as needed
 		return self._send_auth_challenge("https", url, realm, data)
 
