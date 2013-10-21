@@ -3,8 +3,9 @@
 """ 
 
 from urllib import *
+import http_auth
 
-class HEADURLopener(FancyURLopener):
+class HEADURLopener(http_auth.ProtectedRedirectURLopener):
     def open_http(self, url):
         import httplib
         user_passwd = None
