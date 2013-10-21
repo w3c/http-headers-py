@@ -27,7 +27,7 @@ class ProxyAuthURLopener(urllib.FancyURLopener):
 		try:
 			check_url_safety(newurl)
 		except UnsupportedResourceError:
-			raise HTTPError('redirect error', errcode,errmsg + " - Redirection to url '%s' is not allowed" % newurl, headers)		
+			raise IOError('redirect error', errcode,errmsg + " - Redirection to url '%s' is not allowed" % newurl, headers)		
 		return urllib.FancyURLopener.redirect_internal(self,url, fp, errcode, errmsg, headers, data)
 
 
