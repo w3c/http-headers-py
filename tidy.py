@@ -76,21 +76,22 @@ def serveRequest():
     else:
         checker = surbl.SurblChecker('/usr/local/share/surbl/two-level-tlds','/afs/w3.org/pub/WWW/Systems/Server/debian/generic/usr/local/etc/surbl.whitelist')
         addr = fields['docAddr'].value
-	if "'" in addr:
-		print "Status: 403"
-		print "Content-Type: text/plain"
-		print
-		print "sorry, I can't handle addresses with ' in them"
-	elif addr[:5] == 'file:' or len(urlparse.urlparse(addr)[0])<2:
-		print "Status: 403"
-		print "Content-Type: text/plain"
-		print
-		print "sorry, I decline to handle file: addresses"
-        elif checker.isMarkedAsSpam(addr):
+	# cf http://dev.w3.org/cvsweb/2004/PythonLib-IH/checkremote.py
+	from checkremote import check_url_safety, UnsupportedResourceError
+	try:
+                check_url_safety(addr)
+	except UnsupportedResourceError:
+                print "Status: 403"
+                print "Content-Type: text/plain"
+                print
+                print "sorry, I decline to handle this type of addresses"
+                sys.exit()
+        if checker.isMarkedAsSpam(addr):
                 print "Status: 403"
                 print "Content-Type: text/plain; charset=utf-8"
                 print
                 print "sorry, this URL matches a record known in SURBL. See http://www.surbl.org/"
+                sys.exit()
 	else:
                 tidy_options = ["-n", "-asxml", "-q", "--force-output","yes", "--show-warnings", "no"]
                 import http_auth
