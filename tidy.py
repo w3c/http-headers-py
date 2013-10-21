@@ -103,8 +103,8 @@ def serveRequest():
 			url_opener.addheader('X_Forward_IP_Addr',os.environ['REMOTE_ADDR'])
 		try:
 			doc = url_opener.open(addr)
-		except IOError, (errno, strerror):
-			url_opener.error = "I/O error: %s %s" % (errno,strerror)
+		except IOError as e:
+			url_opener.error = "I/O error: %s %s" % (e.errno,e.strerror)
 			doc = None
                 except httplib.InvalidURL:
                         url_opener.error = "Invalid URL submitted"

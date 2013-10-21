@@ -124,8 +124,8 @@ def serveRequest():
 			url_opener.addheader('X_Fwd_IP_Addr',os.environ['REMOTE_ADDR'])
 		try:	
 			fp = url_opener.open(uri)
-		except IOError, (errno, strerror):
-			url_opener.error = "I/O error: %s %s" % (errno,strerror)
+		except IOError as e:
+			url_opener.error = "I/O error: %s %s" % (e.errno,e.strerror)
 			fp = None
                 title = " for %s" % (uri)
                 link = " for <a href='%s'>%s</a>" % (uri,uri)
