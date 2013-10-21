@@ -1,24 +1,24 @@
 import urllib
 import os
 
-class ProtectedRedirectURLopener(urllib.FancyURLopener):
-	def redirect_internal(self, url, fp, errcode, errmsg, headers, data):
-                from urlparse import urljoin as basejoin
-		if 'location' in headers:
-			newurl = headers['location']
-		elif 'uri' in headers:
-			newurl = headers['uri']
-                newurl = basejoin(self.type + ":" + url, newurl)
-		# cf http://dev.w3.org/cvsweb/2004/PythonLib-IH/checkremote.py
-		from checkremote import check_url_safety, UnsupportedResourceError
-		try:
-			check_url_safety(newurl)
-		except UnsupportedResourceError:
-			raise IOError('redirect error', errcode,errmsg + " - Redirection to url '%s' is not allowed" % newurl, headers)		
-		return urllib.FancyURLopener.redirect_internal(self,url, fp, errcode, errmsg, headers, data)
+class ProtectedURLopener(urllib.FancyURLopener):
+    def __init__(self):
+        import surbl
+        urllib.FancyURLopener.__init__(self)
+        self.surblchecker= surbl.SurblChecker('/usr/local/share/surbl/two-level-tlds','/afs/w3.org/pub/WWW/Systems/Server/debian/generic/usr/local/etc/surbl.whitelist')
 
+    def open(self, url, data=None):
+	    # cf http://dev.w3.org/cvsweb/2004/PythonLib-IH/checkremote.py
+	    from checkremote import check_url_safety, UnsupportedResourceError
+	    try:
+		    check_url_safety(url)
+	    except UnsupportedResourceError:
+		    raise IOError(403,"Access to url '%s' is not allowed" % url)
+	    if self.surblchecker.isMarkedAsSpam(url):
+		    raise IOError(403,"Access to url '%s' is not allowed as it is marked as spam in SURBL" % url)
+	    return urllib.FancyURLopener.open(self, url, data)
 
-class ProxyAuthURLopener(ProtectedRedirectURLopener):
+class ProxyAuthURLopener(ProtectedURLopener):
 	error = ""
 	def http_error_default(self, url, fp, errcode, errmsg, headers):
 		self.error = `errcode` + " " + errmsg
