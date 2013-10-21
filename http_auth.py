@@ -15,13 +15,20 @@ class ProxyAuthURLopener(urllib.FancyURLopener):
 		self.error = "Local file URL not accepted"
 		return None
 
-	def redirect_request(self, fp, code, msg, hdsr, newurl):
+	def redirect_internal(self, url, fp, errcode, errmsg, headers, data):
+                from urlparse import urljoin as basejoin
+		if 'location' in headers:
+			newurl = headers['location']
+		elif 'uri' in headers:
+			newurl = headers['uri']
+                newurl = basejoin(self.type + ":" + url, newurl)
+		# cf http://dev.w3.org/cvsweb/2004/PythonLib-IH/checkremote.py
 		from checkremote import check_url_safety, UnsupportedResourceError
 		try:
 			check_url_safety(newurl)
 		except UnsupportedResourceError:
-			raise HTTPError(code=403,reason="Access to disallowed URL")
-		return super(ProxyAuthURLopener).redirect_request(fp, code, msg, hdsr, newurl)
+			raise HTTPError('redirect error', errcode,errmsg + " - Redirection to url '%s' is not allowed" % newurl, headers)		
+		return urllib.FancyURLopener.redirect_internal(self,url, fp, errcode, errmsg, headers, data)
 
 
 	def _send_auth_challenge(self, scheme, url, realm, data=None):
