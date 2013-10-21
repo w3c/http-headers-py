@@ -5,7 +5,7 @@
 from urllib import *
 import http_auth
 
-class HEADURLopener(http_auth.ProtectedRedirectURLopener):
+class HEADURLopener(http_auth.ProtectedURLopener):
     def open_http(self, url):
         import httplib
         user_passwd = None
