@@ -155,16 +155,6 @@ if __name__ == '__main__':
 				suggest=1
 				suggest_txt=" checked='checked'"
 		if uri:
-			# cf http://dev.w3.org/cvsweb/2004/PythonLib-IH/checkremote.py
-			from checkremote import check_url_safety, UnsupportedResourceError
-			try:
-				check_url_safety(uri)
-			except UnsupportedResourceError:
-				print "Status: 403"
-				print "Content-Type: text/plain"
-				print
-				print "sorry, I decline to handle this type of addresses"
-				sys.exit()
 			if True:
 		                import http_auth
 				url_opener = http_auth.ProxyAuthURLopener()
