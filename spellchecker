@@ -170,8 +170,8 @@ if __name__ == '__main__':
 				url_opener = http_auth.ProxyAuthURLopener()
 				try:
 					fp = url_opener.open(uri)
-				except IOError, (errno, strerror):
-					url_opener.error = "I/O error: %s %s" % (errno,strerror)
+				except IOError as e:
+					url_opener.error = "I/O error: %s %s" % (e.errno,e.strerror)
 					fp = None
 				print Page1 % ('<meta name="ROBOTS" content="NOINDEX,NOFOLLOW"/>',uri_text1,uri_text,cgi.escape(uri),languages_options,suggest_txt)
                                 personal = "--personal=%s" % customized_dico
