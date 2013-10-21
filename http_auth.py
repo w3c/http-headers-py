@@ -1,20 +1,7 @@
 import urllib
 import os
 
-class ProxyAuthURLopener(urllib.FancyURLopener):
-	error = ""
-	def http_error_default(self, url, fp, errcode, errmsg, headers):
-		self.error = `errcode` + " " + errmsg
-		return None
-
-        def http_error_304(self,uri,fp,errocode,errmsg,headers):
-                print 'HTTP/1.1 304 Not Modified'
-                return None
-
-	def open_local_file(self, url):
-		self.error = "Local file URL not accepted"
-		return None
-
+class ProtectedRedirectURLopener(urllib.FancyURLopener):
 	def redirect_internal(self, url, fp, errcode, errmsg, headers, data):
                 from urlparse import urljoin as basejoin
 		if 'location' in headers:
@@ -30,6 +17,20 @@ class ProxyAuthURLopener(urllib.FancyURLopener):
 			raise IOError('redirect error', errcode,errmsg + " - Redirection to url '%s' is not allowed" % newurl, headers)		
 		return urllib.FancyURLopener.redirect_internal(self,url, fp, errcode, errmsg, headers, data)
 
+
+class ProxyAuthURLopener(ProtectedRedirectURLopener):
+	error = ""
+	def http_error_default(self, url, fp, errcode, errmsg, headers):
+		self.error = `errcode` + " " + errmsg
+		return None
+
+        def http_error_304(self,uri,fp,errocode,errmsg,headers):
+                print 'HTTP/1.1 304 Not Modified'
+                return None
+
+	def open_local_file(self, url):
+		self.error = "Local file URL not accepted"
+		return None
 
 	def _send_auth_challenge(self, scheme, url, realm, data=None):
 		if scheme not in ('http', 'https'):
