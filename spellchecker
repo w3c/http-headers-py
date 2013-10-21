@@ -155,15 +155,15 @@ if __name__ == '__main__':
 				suggest=1
 				suggest_txt=" checked='checked'"
 		if uri:
-			if True:
-		                import http_auth
-				url_opener = http_auth.ProxyAuthURLopener()
-				try:
-					fp = url_opener.open(uri)
-				except IOError as e:
-					url_opener.error = "I/O error: %s %s" % (e.errno,e.strerror)
-					fp = None
-				print Page1 % ('<meta name="ROBOTS" content="NOINDEX,NOFOLLOW"/>',uri_text1,uri_text,cgi.escape(uri),languages_options,suggest_txt)
+			import http_auth
+			url_opener = http_auth.ProxyAuthURLopener()
+			try:
+				fp = url_opener.open(uri)
+			except IOError as e:
+				url_opener.error = "I/O error: %s %s" % (e.errno,e.strerror)
+				fp = None
+			print Page1 % ('<meta name="ROBOTS" content="NOINDEX,NOFOLLOW"/>',uri_text1,uri_text,cgi.escape(uri),languages_options,suggest_txt)
+			if fp:
                                 personal = "--personal=%s" % customized_dico
                                 if lang!="en_US":
                                         personal = ""
@@ -177,22 +177,21 @@ if __name__ == '__main__':
 
         	                (piperfd,pipewfd,pipeErr) = popen2.popen3(command)
 
-                	        if (fp):
-                			pipewfd.write(fp.read())
-					fp.close()
-	                                pipewfd.close()
-                                        # Need to find a way to display any errors if relevant
-                                        processingErrors=""
-                                        if (processingErrors):
-                	                        print "<p>The following error occurred when trying to process your request :</p><pre class='no'>"
-                        	                print "</pre>"
-                                	        pipeErr.close()
-	                                if (piperfd):
-        	        			print "<h2>Errors found in the page</h2>"
-        		        		format(piperfd,suggest)
-                        	                piperfd.close()
-	                        else:
-        	                        print "<p><span class='no'>Unable to read</span> <a href='%s'>%s</a> (%s). Sorry, check the URI.</p>" % (cgi.escape(uri),cgi.escape(uri), url_opener.error)
+				pipewfd.write(fp.read())
+				fp.close()
+				pipewfd.close()
+				# Need to find a way to display any errors if relevant
+				processingErrors=""
+				if (processingErrors):
+					print "<p>The following error occurred when trying to process your request :</p><pre class='no'>"
+					print "</pre>"
+					pipeErr.close()
+				if (piperfd):
+					print "<h2>Errors found in the page</h2>"
+					format(piperfd,suggest)
+					piperfd.close()
+			else:
+				print "<p><span class='no'>Unable to read</span> <a href='%s'>%s</a> (%s). Sorry, check the URI.</p>" % (cgi.escape(uri),cgi.escape(uri), url_opener.error)
 		else:
 			print Page1 % ('',uri_text1,uri_text,cgi.escape(uri),languages_options,suggest_txt)
 		print Page2
