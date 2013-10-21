@@ -15,6 +15,15 @@ class ProxyAuthURLopener(urllib.FancyURLopener):
 		self.error = "Local file URL not accepted"
 		return None
 
+	def redirect_request(self, fp, code, msg, hdsr, newurl):
+		from checkremote import check_url_safety, UnsupportedResourceError
+		try:
+			check_url_safety(newurl)
+		except UnsupportedResourceError:
+			raise HTTPError(code=403,reason="Access to disallowed URL")
+		return super(ProxyAuthURLopener).redirect_request(fp, code, msg, hdsr, newurl)
+
+
 	def _send_auth_challenge(self, scheme, url, realm, data=None):
 		if scheme not in ('http', 'https'):
 			return
