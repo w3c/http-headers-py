@@ -18,9 +18,7 @@ import cgi
 import sys
 import os
 import urlparse
-import urllib
 import httplib
-import surbl
 
 Page = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -74,25 +72,8 @@ def serveRequest():
         print Page
 	print Page2 % ("")
     else:
-        checker = surbl.SurblChecker('/usr/local/share/surbl/two-level-tlds','/afs/w3.org/pub/WWW/Systems/Server/debian/generic/usr/local/etc/surbl.whitelist')
         addr = fields['docAddr'].value
-	# cf http://dev.w3.org/cvsweb/2004/PythonLib-IH/checkremote.py
-	from checkremote import check_url_safety, UnsupportedResourceError
-	try:
-                check_url_safety(addr)
-	except UnsupportedResourceError:
-                print "Status: 403"
-                print "Content-Type: text/plain"
-                print
-                print "sorry, I decline to handle this type of addresses"
-                sys.exit()
-        if checker.isMarkedAsSpam(addr):
-                print "Status: 403"
-                print "Content-Type: text/plain; charset=utf-8"
-                print
-                print "sorry, this URL matches a record known in SURBL. See http://www.surbl.org/"
-                sys.exit()
-	else:
+        if True:
                 tidy_options = ["-n", "-asxml", "-q", "--force-output","yes", "--show-warnings", "no"]
                 import http_auth
 		url_opener = http_auth.ProxyAuthURLopener()
