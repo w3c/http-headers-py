@@ -52,7 +52,7 @@ by <a href="http://www.w3.org/People/Dom/">Dominique Hazael-Massieux</a><br />
 class myURLopener(http_head.HEADURLopener,http_auth.ProxyAuthURLopener):
 	def __init__(self,auth=0,*args):
 		self.auth = auth
-		apply(urllib.FancyURLopener.__init__, (self,) + args)
+		apply(http_auth.ProxyAuthURLopener.__init__, (self,) + args)
 
 	def http_error_default(self, url, fp, errcode, errmsg, headers):
 		return None
@@ -94,17 +94,7 @@ def serveRequest():
 	print Page2 % ("","","")
     else:
         uri = fields['url'].value
-	# cf http://dev.w3.org/cvsweb/2004/PythonLib-IH/checkremote.py
-	from checkremote import check_url_safety, UnsupportedResourceError
-	try:
-                check_url_safety(uri)
-	except UnsupportedResourceError:
-                print "Status: 403"
-                print "Content-Type: text/plain"
-                print
-                print "sorry, I decline to handle this type of addresses"
-                sys.exit()
-	else:
+	if True:
 		auth = 0
 		auth_text = ""
 		if fields.has_key('auth') and  fields['auth'].value=='on':
