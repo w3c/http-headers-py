@@ -174,7 +174,7 @@ def serveRequest():
 			print
 			print Page
 			print "<p style='color:#FF0000'>An error (<code>%s</code>) occured trying to get <a href=\"%s\">%s</a></p>" % (cgi.escape(url_opener.error), cgi.escape(addr, True) , cgi.escape(addr))
-			print Page2 % cgi.escape(addr)
+			print Page2 % cgi.escape(addr, True)
 
 
 if __name__ == '__main__':
