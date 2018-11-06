@@ -5,7 +5,7 @@ class ProtectedURLopener(urllib.FancyURLopener):
     def __init__(self):
         import surbl
         urllib.FancyURLopener.__init__(self)
-        self.surblchecker= surbl.SurblChecker('/usr/local/share/surbl/two-level-tlds','/afs/w3.org/pub/WWW/Systems/Server/debian/generic/usr/local/etc/surbl.whitelist')
+        self.surblchecker= surbl.SurblChecker('/usr/local/share/surbl/two-level-tlds','/usr/local/etc/surbl.whitelist')
 
     def open(self, url, data=None):
 	    # cf http://dev.w3.org/cvsweb/2004/PythonLib-IH/checkremote.py
